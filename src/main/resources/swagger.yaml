@@ -1,0 +1,451 @@
+openapi: 3.0.0
+servers:
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/frekenbok/frekenbok/1.0.0
+info:
+  title: Frekenbok API
+  version: "0.1.0"
+  contact:
+    email: valera@creator.su
+tags:
+  - name: Accounts
+  - name: Invoices
+
+paths:
+  /accounts:
+    get:
+      tags:
+        - Accounts
+      description: Returns list of all accounts
+      operationId: getAccounts
+      responses:
+        200:
+          description: Successful result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountListResponse'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: Something has gone wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - Accounts
+      description: Create new account
+      operationId: createAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Account'
+      responses:
+        201:
+          description: Successful result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: Something has gone wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  '/accounts/{accountId}':
+    get:
+      tags:
+        - Accounts
+      description: Returns details of specified account
+      operationId: getSingleAccount
+      parameters:
+        - in: path
+          required: true
+          name: accountId
+          description: ID of required account
+          schema:
+            $ref: '#/components/schemas/AccountId'
+      responses:
+        200:
+          description: Successful result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: Something has gone wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /invoices:
+    get:
+      tags:
+        - Invoices
+      description: Returns list of all invoices ordered by timestamp.
+      operationId: getInvoices
+      parameters:
+        - name: before
+          in: query
+          description: |
+            Return invoices not after given timestamp. Together with
+            `limit` it can be used for pagination.
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          description: |
+            Limit number of returned invoices. Together with
+            `before` it can be used for pagination.
+          schema:
+            type: integer
+            format: int32
+            default: 20
+            minimum: 1
+            maximum: 1000
+      responses:
+        200:
+          description: Successful result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceListResponse'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: Something has gone wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - Invoices
+      description: Create new invoice
+      operationId: createInvoice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Invoice'
+      responses:
+        201:
+          description: Successful result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceResponse'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: Something has gone wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  '/invoices/{invoiceId}':
+    get:
+      tags:
+        - Invoices
+      description: Returns details of specified invoice
+      operationId: getSingeInvoice
+      parameters:
+        - in: path
+          required: true
+          name: invoiceId
+          description: ID of required invoice
+          schema:
+            $ref: '#/components/schemas/InvoiceId'
+      responses:
+        200:
+          description: Successful result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceResponse'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: Something has gone wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+components:
+  schemas:
+    AccountType:
+      type: string
+      enum:
+        - income
+        - account
+        - expense
+      description: |
+        * `income` source of incomes like salary,
+        interest rates of bank deposit, etc.
+        * `account` some persistant storage of money,
+        e. g. bank account, wallet in your pocket or piggy bank.
+        * `expense` an arcane place where money disappears.
+
+    Currency:
+      type: string
+      pattern: "[A-Z]{3}"
+      description: Alphabetic currency code according to ISO 4217
+
+    Money:
+      type: object
+      required:
+        - amount
+        - currency
+      properties:
+        amount:
+          type: number
+        currency:
+          $ref: '#/components/schemas/Currency'
+
+    Timestamp:
+      type: string
+      format: date-time
+      example: 2019-05-01T23:15:44.956+0300
+      description: Timezone aware date and time info according to ISO 8601
+
+    AccountId:
+      type: string
+      format: uuid
+      x-scala-type: java.util.UUID
+
+    Account:
+      type: object
+      required:
+        - id
+        - name
+        - accountType
+        - balance
+      properties:
+        id:
+          $ref: '#/components/schemas/AccountId'
+        name:
+          type: string
+        accountType:
+          $ref: '#/components/schemas/AccountType'
+        opened:
+          type: string
+          format: date-time
+        closed:
+          type: string
+          format: date-time
+        balance:
+          type: array
+          items:
+            $ref: '#/components/schemas/Money'
+
+    Transaction:
+      type: object
+      required:
+        - accountId
+        - amount
+        - currency
+        - date
+      properties:
+        accountId:
+          $ref: '#/components/schemas/AccountId'
+        amount:
+          description: Amount of money affected by the transaction
+          $ref: '#/components/schemas/Money'
+        date:
+          type: string
+          format: date
+        bankId:
+          type: string
+          description: ID of the transaction according to bank statement
+
+    InvoiceId:
+      type: string
+      format: uuid
+      x-scala-type: java.util.UUID
+      description: Uniqie identifier of the invoice
+
+    Invoice:
+      type: object
+      required:
+        - id
+        - timestamp
+        - transactions
+      properties:
+        id:
+          $ref: '#/components/schemas/InvoiceId'
+        timestamp:
+          $ref: '#/components/schemas/Timestamp'
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+        description:
+          type: string
+          description: Some textual descriprion of the purchase
+          example: Rent for the apartment, 2019-04
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+
+    ApiResponse:
+      type: object
+      x-absract: true
+      required:
+        - status
+      properties:
+        status:
+          type: integer
+          format: int32
+          description: Same as HTTP status code
+
+    ErrorType:
+      type: string
+      enum:
+        - NOT_FOUND
+
+    Error:
+      type: object
+      required:
+        - type
+        - message
+      properties:
+        type:
+          $ref: '#/components/schemas/ErrorType'
+        message:
+          type: string
+          description: Human readable description of problem
+
+    ErrorResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              $ref: '#/components/schemas/Error'
+
+    AccountResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/Account'
+
+    AccountListResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Account'
+
+    InvoiceResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/Invoice'
+
+    InvoiceListResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Invoice'
+
+
+  securitySchemes:
+    petstore_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: 'http://petstore.swagger.io/oauth/dialog'
+          scopes:
+            'write:pets': modify pets in your account
+            'read:pets': read your pets
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
