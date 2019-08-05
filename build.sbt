@@ -22,7 +22,10 @@ libraryDependencies ++= List(
 
   "org.specs2" %% "specs2-core" % "4.6.0" % Test,
 
-  "com.iheart" %% "ficus" % "1.4.7"
+  "com.iheart" %% "ficus" % "1.4.7",
+
+  "ch.qos.logback" % "logback-classic" % "1.2.3",
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2"
 )
 
 guardrailTasks in Compile := List(
