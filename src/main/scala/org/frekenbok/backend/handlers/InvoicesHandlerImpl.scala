@@ -1,12 +1,11 @@
 package org.frekenbok.backend.handlers
 
-import java.time.OffsetDateTime
 import java.util.UUID
 
 import org.frekenbok.backend.Invoices.{InvoicesHandler, InvoicesResource}
 import org.frekenbok.backend.dao.InvoicesDao
 import org.frekenbok.backend.definitions.ErrorType.NotFound
-import org.frekenbok.backend.definitions.{Error, ErrorResponse, Invoice, InvoiceResponse}
+import org.frekenbok.backend.definitions.{Error, ErrorResponse, Invoice, InvoiceListResponse, InvoiceResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -17,7 +16,11 @@ class InvoicesHandlerImpl(dao: InvoicesDao)(implicit ec: ExecutionContext) exten
     }
   }
 
-  def getInvoices(respond: InvoicesResource.getInvoicesResponse.type)(before: Option[OffsetDateTime], limit: Option[Int]): Future[InvoicesResource.getInvoicesResponse] = ???
+  def getInvoices(respond: InvoicesResource.getInvoicesResponse.type)(before: Option[java.time.OffsetDateTime] = None, limit: Option[Int] = Option(20)): Future[InvoicesResource.getInvoicesResponse] = {
+    dao.getMany(before, limit).map { invoices =>
+      respond.OK(InvoiceListResponse(200, invoices))
+    }
+  }
 
   def getSingeInvoice(respond: InvoicesResource.getSingeInvoiceResponse.type)(invoiceId: UUID): Future[InvoicesResource.getSingeInvoiceResponse] = {
     dao.get(invoiceId).map {
