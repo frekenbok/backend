@@ -1,7 +1,7 @@
 package org.frekenbok.backend
 
 import java.nio.ByteBuffer
-import java.time.{LocalDate, OffsetDateTime}
+import java.time.{Instant, LocalDate}
 import java.util.UUID
 
 import org.frekenbok.backend.definitions._
@@ -24,10 +24,10 @@ package object dao {
     }
   }
 
-  implicit object OffsetDateTimeHandler extends BSONHandler[BSONString, OffsetDateTime] {
-    override def read(bson: BSONString): OffsetDateTime = OffsetDateTime.parse(bson.value)
+  implicit object InstantHandler extends BSONHandler[BSONString, Instant] {
+    override def read(bson: BSONString): Instant = Instant.parse(bson.value)
 
-    override def write(offsetDateTime: OffsetDateTime): BSONString = BSONString(offsetDateTime.toString)
+    override def write(instant: Instant): BSONString = BSONString(instant.toString)
   }
 
   implicit object LocalDateHandler extends BSONHandler[BSONString, LocalDate] {
@@ -37,7 +37,11 @@ package object dao {
   }
 
   //TODO try to implement this using shapeless
-  protected trait IdAdjustingHandler[T] extends BSONDocumentWriter[T] with BSONDocumentReader[T] {
+  /**
+   * Replace `id` fields in BSONDocument to `_id` and vice versa. Sort of work around for
+   * MongoDB, required because we can't rename primary key field.
+   */
+  protected[dao] trait IdAdjustingHandler[T] extends BSONDocumentWriter[T] with BSONDocumentReader[T] {
     protected def handler: BSONDocumentHandler[T]
 
     override def read(bson: BSONDocument): T = {

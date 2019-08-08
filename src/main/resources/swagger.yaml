@@ -16,6 +16,7 @@ paths:
     get:
       tags:
         - Accounts
+      x-jvm-package: accounts
       description: Returns list of all accounts
       operationId: getAccounts
       responses:
@@ -40,6 +41,7 @@ paths:
     post:
       tags:
         - Accounts
+      x-jvm-package: accounts
       description: Create new account
       operationId: createAccount
       requestBody:
@@ -72,6 +74,7 @@ paths:
     get:
       tags:
         - Accounts
+      x-jvm-package: accounts
       description: Returns details of specified account
       operationId: getSingleAccount
       parameters:
@@ -111,6 +114,7 @@ paths:
     get:
       tags:
         - Invoices
+      x-jvm-package: invoices
       description: Returns list of all invoices ordered by timestamp.
       operationId: getInvoices
       parameters:
@@ -155,6 +159,7 @@ paths:
     post:
       tags:
         - Invoices
+      x-jvm-package: invoices
       description: Create new invoice
       operationId: createInvoice
       requestBody:
@@ -187,6 +192,7 @@ paths:
     get:
       tags:
         - Invoices
+      x-jvm-package: invoices
       description: Returns details of specified invoice
       operationId: getSingeInvoice
       parameters:
@@ -257,8 +263,9 @@ components:
     Timestamp:
       type: string
       format: date-time
-      example: 2019-05-01T23:15:44.956+0300
+      example: 2019-05-01T23:15:44.956Z
       description: Timezone aware date and time info according to ISO 8601
+      x-scala-type: java.time.Instant
 
     AccountId:
       type: string

@@ -5,7 +5,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import akka.stream.Materializer
 import org.frekenbok.backend.AkkaHttpImplicits.jsonEntityMarshaller
-import org.frekenbok.backend.Invoices.InvoicesResource
+import org.frekenbok.backend.invoices.InvoicesResource
 import org.frekenbok.backend.dao.InvoicesDao
 import org.frekenbok.backend.definitions.{Error, ErrorResponse, ErrorType}
 import reactivemongo.api.DB
