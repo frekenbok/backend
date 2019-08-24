@@ -7,6 +7,7 @@ scalaVersion := "2.12.8"
 val akkaStreamVersion = "2.5.23"
 val akkaHttpVersion = "10.1.9"
 val circeVersion = "0.11.1"
+val specs2Version = "4.6.0"
 
 libraryDependencies ++= List(
   "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
@@ -20,7 +21,8 @@ libraryDependencies ++= List(
 
   "org.reactivemongo" %% "reactivemongo" % "0.18.3",
 
-  "org.specs2" %% "specs2-core" % "4.6.0" % Test,
+  "org.specs2" %% "specs2-core" % specs2Version % Test,
+  "org.specs2" %% "specs2-mock" % specs2Version % Test,
 
   "com.iheart" %% "ficus" % "1.4.7",
 
@@ -31,3 +33,5 @@ libraryDependencies ++= List(
 guardrailTasks in Compile := List(
   ScalaServer(file("src/main/resources/swagger.yaml"), pkg = "org.frekenbok.backend")
 )
+
+scalacOptions in Test ++= Seq("-Yrangepos")

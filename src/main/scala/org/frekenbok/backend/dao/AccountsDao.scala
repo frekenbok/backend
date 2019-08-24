@@ -7,6 +7,6 @@ import reactivemongo.api.DB
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class AccountsDao(db: DB)(implicit ec: ExecutionContext) extends AbstractDAO[Account](db) {
+class AccountsDao(db: DB)(implicit ec: ExecutionContext) extends AbstractDao[Account](db) {
   protected def getId(item: Account): UUID = item.id
 }

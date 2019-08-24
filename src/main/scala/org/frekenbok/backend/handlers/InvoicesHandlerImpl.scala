@@ -1,5 +1,6 @@
 package org.frekenbok.backend.handlers
 
+import java.time.Instant
 import java.util.UUID
 
 import org.frekenbok.backend.dao.InvoicesDao
@@ -16,8 +17,8 @@ class InvoicesHandlerImpl(dao: InvoicesDao)(implicit ec: ExecutionContext) exten
     }
   }
 
-  def getInvoices(respond: InvoicesResource.getInvoicesResponse.type)(before: Option[java.time.OffsetDateTime] = None, limit: Option[Int] = Option(20)): Future[InvoicesResource.getInvoicesResponse] = {
-    dao.getMany(before, limit).map { invoices =>
+  def getInvoices(respond: InvoicesResource.getInvoicesResponse.type)(before: Option[Instant] = None, limit: Option[Int] = Option(20)): Future[InvoicesResource.getInvoicesResponse] = {
+    dao.getMany(before, limit.getOrElse(20)).map { invoices =>
       respond.OK(InvoiceListResponse(200, invoices))
     }
   }

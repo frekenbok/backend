@@ -124,8 +124,7 @@ paths:
             Return invoices not after given timestamp. Together with
             `limit` it can be used for pagination.
           schema:
-            type: string
-            format: date-time
+            $ref: '#/components/schemas/Timestamp'
         - name: limit
           in: query
           description: |
@@ -287,11 +286,9 @@ components:
         accountType:
           $ref: '#/components/schemas/AccountType'
         opened:
-          type: string
-          format: date-time
+          $ref: '#/components/schemas/Timestamp'
         closed:
-          type: string
-          format: date-time
+          $ref: '#/components/schemas/Timestamp'
         balance:
           type: array
           items:
