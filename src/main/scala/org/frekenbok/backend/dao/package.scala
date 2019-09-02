@@ -5,11 +5,19 @@ import java.time.{Instant, LocalDate}
 import java.util.UUID
 
 import org.frekenbok.backend.definitions._
+import reactivemongo.bson.Macros.Annotations.Key
 import reactivemongo.bson._
+import shapeless._
 
 package object dao {
 
-  case class Selector(_id: UUID)
+  case class MongoSelector(@Key("_id") id: UUID)
+
+  object MongoSelector {
+    def apply[T, Repr <: UUID :: HList](item: T)(implicit gen: Generic.Aux[T, Repr]): MongoSelector = {
+      apply(gen.to(item).head)
+    }
+  }
 
   implicit object UuidHandler extends BSONHandler[BSONBinary, UUID] {
     override def read(bson: BSONBinary): UUID = {
@@ -66,7 +74,7 @@ package object dao {
 
   }
 
-  implicit val selectorWriter: BSONDocumentWriter[Selector] = Macros.writer[Selector]
+  implicit val selectorWriter: BSONDocumentWriter[MongoSelector] = Macros.writer[MongoSelector]
 
   implicit val moneyHandler: BSONDocumentHandler[Money] = Macros.handler[Money]
   implicit val transactionHandler: BSONDocumentHandler[Transaction] = Macros.handler[Transaction]

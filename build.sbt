@@ -16,6 +16,7 @@ libraryDependencies ++= List(
 
   "io.circe" %% "circe-core" % circeVersion,
   "io.circe" %% "circe-generic" % circeVersion,
+  "io.circe" %% "circe-generic-extras" % circeVersion,
   "io.circe" %% "circe-java8" % circeVersion,
   "io.circe" %% "circe-parser" % circeVersion,
 
@@ -23,6 +24,8 @@ libraryDependencies ++= List(
 
   "org.specs2" %% "specs2-core" % specs2Version % Test,
   "org.specs2" %% "specs2-mock" % specs2Version % Test,
+
+  "com.chuusai" %% "shapeless" % "2.3.3",
 
   "com.iheart" %% "ficus" % "1.4.7",
 
