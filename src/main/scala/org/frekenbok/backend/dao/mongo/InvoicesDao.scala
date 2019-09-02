@@ -1,9 +1,8 @@
-package org.frekenbok.backend.dao
+package org.frekenbok.backend.dao.mongo
 
 import java.time.Instant
 import java.util.UUID
 
-import org.frekenbok.backend.dao.InvoicesDao.InvoiceRepr
 import org.frekenbok.backend.definitions.{Invoice, Transaction}
 import reactivemongo.api.DB
 import reactivemongo.bson.{BSONDocument => doc}

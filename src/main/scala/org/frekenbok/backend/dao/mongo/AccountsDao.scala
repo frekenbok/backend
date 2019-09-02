@@ -1,9 +1,8 @@
-package org.frekenbok.backend.dao
+package org.frekenbok.backend.dao.mongo
 
 import java.time.Instant
 import java.util.UUID
 
-import org.frekenbok.backend.dao.AccountsDao.AccountRepr
 import org.frekenbok.backend.definitions.{Account, AccountType, Money}
 import reactivemongo.api.DB
 import shapeless.Generic.Aux

@@ -1,4 +1,4 @@
-package org.frekenbok.backend
+package org.frekenbok.backend.dao
 
 import java.nio.ByteBuffer
 import java.time.{Instant, LocalDate}
@@ -9,7 +9,7 @@ import reactivemongo.bson.Macros.Annotations.Key
 import reactivemongo.bson._
 import shapeless._
 
-package object dao {
+package object mongo {
 
   case class MongoSelector(@Key("_id") id: UUID)
 
@@ -49,7 +49,7 @@ package object dao {
    * Replace `id` fields in BSONDocument to `_id` and vice versa. Sort of work around for
    * MongoDB, required because we can't rename primary key field.
    */
-  protected[dao] trait IdAdjustingHandler[T] extends BSONDocumentWriter[T] with BSONDocumentReader[T] {
+  protected[mongo] trait IdAdjustingHandler[T] extends BSONDocumentWriter[T] with BSONDocumentReader[T] {
     protected def handler: BSONDocumentHandler[T]
 
     override def read(bson: BSONDocument): T = {

@@ -3,7 +3,7 @@ package org.frekenbok.backend.handlers
 import java.time.Instant
 import java.util.UUID
 
-import org.frekenbok.backend.dao.InvoicesDao
+import org.frekenbok.backend.dao.mongo.InvoicesDao
 import org.frekenbok.backend.definitions.ErrorType.NotFound
 import org.frekenbok.backend.definitions.{Error, ErrorResponse, Invoice, InvoiceListResponse, InvoiceResponse}
 import org.frekenbok.backend.invoices.{InvoicesHandler, InvoicesResource}

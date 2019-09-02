@@ -1,4 +1,4 @@
-package org.frekenbok.backend.dao
+package org.frekenbok.backend.dao.mongo
 
 import java.time.temporal.ChronoUnit.{HOURS, MINUTES}
 import java.time.{Instant, LocalDate}
