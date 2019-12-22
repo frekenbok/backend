@@ -18,7 +18,7 @@ abstract class AbstractDao[T: BSONDocumentReader : BSONDocumentWriter, Repr <: U
   private val collection: BSONCollection = db.collection(ct.runtimeClass.getSimpleName)
 
   def get(id: UUID): Future[Option[T]] = {
-    collection.find(MongoSelector(id)).one[T]
+    collection.find(MongoSelector(id), None).one[T]
   }
 
   def add(item: T): Future[UpdateWriteResult] = {
@@ -30,7 +30,7 @@ abstract class AbstractDao[T: BSONDocumentReader : BSONDocumentWriter, Repr <: U
   }
 
   protected def getMany(filter: BSONDocument, sort: BSONDocument, limit: Int): Future[Vector[T]] = {
-    collection.find(filter)
+    collection.find(filter, None)
       .sort(sort)
       .cursor[T]()
       .collect[Vector](limit, Cursor.FailOnError[Vector[T]]())
