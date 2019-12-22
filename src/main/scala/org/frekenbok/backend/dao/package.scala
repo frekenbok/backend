@@ -32,10 +32,10 @@ package object dao {
     }
   }
 
-  implicit object InstantHandler extends BSONHandler[BSONString, Instant] {
-    override def read(bson: BSONString): Instant = Instant.parse(bson.value)
+  implicit object InstantHandler extends BSONHandler[BSONDateTime, Instant] {
+    override def read(bson: BSONDateTime): Instant = Instant.ofEpochMilli(bson.value)
 
-    override def write(instant: Instant): BSONString = BSONString(instant.toString)
+    override def write(instant: Instant): BSONDateTime = BSONDateTime(instant.toEpochMilli)
   }
 
   implicit object LocalDateHandler extends BSONHandler[BSONString, LocalDate] {
