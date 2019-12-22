@@ -2,14 +2,13 @@ package org.frekenbok.backend
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.stream.{ActorMaterializer, Materializer}
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.Logger
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 import org.frekenbok.backend.config.Config
 import org.frekenbok.backend.handlers.routes
-import reactivemongo.api.MongoDriver
+import reactivemongo.api.AsyncDriver
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
@@ -17,7 +16,6 @@ import scala.util.{Failure, Success, Try}
 object Main extends App {
 
   implicit val as: ActorSystem = ActorSystem("frekenbok")
-  implicit val ma: Materializer = ActorMaterializer()
 
   import as.dispatcher
 
@@ -25,7 +23,7 @@ object Main extends App {
 
   (for {
     config <- Future.fromTry(Try(ConfigFactory.load().as[Config]))
-    connection <- Future.fromTry(MongoDriver().connection(config.mongo.uri))
+    connection <- AsyncDriver().connect(config.mongo.uri)
     db <- connection.database(config.mongo.database)
     binding <- Http().bindAndHandle(
       handler = routes(db),
