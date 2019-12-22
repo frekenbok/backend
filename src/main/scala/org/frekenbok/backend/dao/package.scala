@@ -5,87 +5,82 @@ import java.time.{Instant, LocalDate}
 import java.util.UUID
 
 import org.frekenbok.backend.definitions._
-import reactivemongo.bson.Macros.Annotations.Key
-import reactivemongo.bson._
+import reactivemongo.api.bson.Macros.Annotations.Key
+import reactivemongo.api.bson.Subtype.UuidSubtype
+import reactivemongo.api.bson._
 import shapeless._
+
+import scala.util.Try
 
 package object dao {
 
-  case class MongoSelector(@Key("_id") id: UUID)
+  case class MongoSelector[PK](@Key("_id") id: PK)
 
-  object MongoSelector {
-    def apply[T, Repr <: UUID :: HList](item: T)(implicit gen: Generic.Aux[T, Repr]): MongoSelector = {
-      apply(gen.to(item).head)
-    }
+  type Repr[PK, Rest <: HList] = PK :: Rest
+
+  implicit val uuidReader: BSONReader[UUID] = BSONReader.collect {
+    case binary: BSONBinary if binary.subtype == UuidSubtype =>
+      val bb = ByteBuffer.wrap(binary.byteArray)
+      new UUID(bb.getLong, bb.getLong)
   }
 
-  implicit object UuidHandler extends BSONHandler[BSONBinary, UUID] {
-    override def read(bson: BSONBinary): UUID = {
-      val bb = ByteBuffer.wrap(bson.byteArray);
-      val high = bb.getLong();
-      val low = bb.getLong();
-      new UUID(high, low)
-    }
+  implicit val uuidWriter: BSONWriter[UUID] = BSONWriter(BSONBinary.apply)
 
-    override def write(uuid: UUID): BSONBinary = {
-      BSONBinary(uuid)
-    }
+  implicit val instantReader: BSONReader[Instant] = BSONReader.collect {
+    case BSONDateTime(value) => Instant.ofEpochMilli(value)
   }
 
-  implicit object InstantHandler extends BSONHandler[BSONDateTime, Instant] {
-    override def read(bson: BSONDateTime): Instant = Instant.ofEpochMilli(bson.value)
+  implicit val instantWriter: BSONWriter[Instant] = BSONWriter(i => BSONDateTime(i.toEpochMilli))
 
-    override def write(instant: Instant): BSONDateTime = BSONDateTime(instant.toEpochMilli)
+  implicit val localDateReader: BSONReader[LocalDate] = BSONReader.collect {
+    case BSONString(value) => LocalDate.parse(value)
   }
 
-  implicit object LocalDateHandler extends BSONHandler[BSONString, LocalDate] {
-    override def read(bson: BSONString): LocalDate = LocalDate.parse(bson.value)
-
-    override def write(localDate: LocalDate): BSONString = BSONString(localDate.toString)
-  }
+  implicit val localDateWriter: BSONWriter[String] = BSONWriter(BSONString.apply)
 
   //TODO try to implement this using shapeless
   /**
-   * Replace `id` fields in BSONDocument to `_id` and vice versa. Sort of work around for
-   * MongoDB, required because we can't rename primary key field.
-   */
-  protected[dao] trait IdAdjustingHandler[T] extends BSONDocumentWriter[T] with BSONDocumentReader[T] {
-    protected def handler: BSONDocumentHandler[T]
+    * Replace `id` fields in BSONDocument to `_id` and vice versa. Sort of work around for
+    * MongoDB, required because we can't rename primary key field.
+    */
+  protected[dao] trait IdAdjustingHandler[T] extends BSONDocumentReader[T] with BSONDocumentWriter[T] {
+    protected def underlying: BSONDocumentHandler[T]
 
-    override def read(bson: BSONDocument): T = {
+    def readDocument(bson: BSONDocument): Try[T] = {
       val adjustedDoc = bson.get("_id") match {
         case Some(id) =>
           bson ++ ("id" -> id)
         case None =>
           bson
       }
-      handler.read(adjustedDoc)
+      underlying.readTry(adjustedDoc)
     }
 
-    override def write(item: T): BSONDocument = {
-      val doc = handler.write(item)
-      doc.get("id") match {
-        case Some(id) =>
-          doc ++ ("_id" -> id) -- "id"
-        case None =>
-          doc
+    def writeTry(item: T): Try[BSONDocument] = {
+      underlying.writeTry(item).map { doc =>
+        doc.get("id") match {
+          case Some(id) =>
+            doc ++ ("_id" -> id) -- "id"
+          case None =>
+            doc
+        }
       }
     }
 
   }
 
-  implicit val selectorWriter: BSONDocumentWriter[MongoSelector] = Macros.writer[MongoSelector]
+  implicit def selectorWriter[PK: BSONWriter]: BSONDocumentWriter[MongoSelector[PK]] = Macros.writer[MongoSelector[PK]]
 
   implicit val moneyHandler: BSONDocumentHandler[Money] = Macros.handler[Money]
   implicit val transactionHandler: BSONDocumentHandler[Transaction] = Macros.handler[Transaction]
   implicit val accountTypeHandler: BSONDocumentHandler[AccountType] = Macros.handler[AccountType]
 
   implicit object AccountHandler extends IdAdjustingHandler[Account] {
-    protected val handler: BSONDocumentHandler[Account] = Macros.handler[Account]
+    protected val underlying: BSONDocumentHandler[Account] = Macros.handler[Account]
   }
 
   implicit object InvoiceHandler extends IdAdjustingHandler[Invoice] {
-    protected val handler: BSONDocumentHandler[Invoice] = Macros.handler[Invoice]
+    protected val underlying: BSONDocumentHandler[Invoice] = Macros.handler[Invoice]
   }
 
 }

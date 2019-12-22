@@ -1,42 +1,42 @@
 package org.frekenbok.backend.dao
 
-import java.util.UUID
-
-import reactivemongo.api.collections.bson.BSONCollection
+import reactivemongo.api.bson.collection.BSONCollection
+import reactivemongo.api.bson.{BSONDocument, BSONDocumentReader, BSONDocumentWriter, BSONWriter}
 import reactivemongo.api.commands.{UpdateWriteResult, WriteResult}
 import reactivemongo.api.{Cursor, DB}
-import reactivemongo.bson.{BSONDocument, BSONDocumentReader, BSONDocumentWriter, Macros}
-import shapeless._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
 
-abstract class AbstractDao[T: BSONDocumentReader : BSONDocumentWriter, Repr <: UUID :: HList](db: DB)(implicit ec: ExecutionContext, ct: ClassTag[T], gen: Generic.Aux[T, Repr]) {
+abstract class AbstractDao[T: BSONDocumentWriter: BSONDocumentReader, PK: BSONWriter](
+  db: DB,
+)(
+  implicit ec: ExecutionContext,
+  ct: ClassTag[T]
+) {
 
-  import AbstractDao._
+  protected def getPK(item: T): PK
 
-  private val collection: BSONCollection = db.collection(ct.runtimeClass.getSimpleName)
+  private val collection: BSONCollection =
+    db.collection(ct.runtimeClass.getSimpleName)
 
-  def get(id: UUID): Future[Option[T]] = {
-    collection.find(MongoSelector(id), None).one[T]
+  def get(id: PK): Future[Option[T]] = {
+    collection.find[MongoSelector[PK], BSONDocument](MongoSelector[PK](id), None).one[T]
   }
 
   def add(item: T): Future[UpdateWriteResult] = {
-    collection.update.one(MongoSelector(item), item, upsert = true)
+    collection.update.one(MongoSelector[PK](getPK(item)), item, upsert = true)
   }
 
-  def remove(id: UUID): Future[WriteResult] = {
-    collection.delete().one(MongoSelector(id))
+  def remove(id: PK): Future[WriteResult] = {
+    collection.delete().one(MongoSelector[PK](id))
   }
 
   protected def getMany(filter: BSONDocument, sort: BSONDocument, limit: Int): Future[Vector[T]] = {
-    collection.find(filter, None)
+    collection
+      .find[BSONDocument, BSONDocument](filter, None)
       .sort(sort)
       .cursor[T]()
       .collect[Vector](limit, Cursor.FailOnError[Vector[T]]())
   }
-}
-
-object AbstractDao {
-  implicit val selectorWriter: BSONDocumentWriter[MongoSelector] = Macros.writer[MongoSelector]
 }

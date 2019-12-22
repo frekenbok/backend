@@ -2,7 +2,7 @@ name := "backend"
 
 version := "0.1"
 
-scalaVersion := "2.12.8"
+scalaVersion := "2.12.10"
 
 val akkaStreamVersion = "2.6.1"
 val akkaHttpVersion = "10.1.11"
@@ -16,8 +16,6 @@ libraryDependencies ++= List(
 
   "io.circe" %% "circe-core" % circeVersion,
   "io.circe" %% "circe-generic" % circeVersion,
-  "io.circe" %% "circe-generic-extras" % circeVersion,
-  "io.circe" %% "circe-java8" % circeVersion,
   "io.circe" %% "circe-parser" % circeVersion,
 
   "org.reactivemongo" %% "reactivemongo" % "0.19.5",

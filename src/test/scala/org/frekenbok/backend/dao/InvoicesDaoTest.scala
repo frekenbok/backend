@@ -26,7 +26,7 @@ class InvoicesDaoTest extends Specification with MongoTest {
 
   val expenseAccountId: UUID = UUID.randomUUID
   val walletAccountId: UUID = UUID.randomUUID
-  val invoice = Invoice(
+  val invoice: Invoice = Invoice(
     UUID.randomUUID,
     Instant.parse("2019-08-06T01:24:15.450Z"),
     Vector(
