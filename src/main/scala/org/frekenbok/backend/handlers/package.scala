@@ -23,7 +23,7 @@ package object handlers {
           complete(
             InternalServerError -> ErrorResponse(
               InternalServerError.intValue,
-              Error(ErrorType.InternalServerError, exception.getMessage)
+              Error(ErrorType.InternalServerError, "Internal server error")
             )
           )
         }
