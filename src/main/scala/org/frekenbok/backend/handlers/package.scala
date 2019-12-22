@@ -4,6 +4,8 @@ import akka.http.scaladsl.model.StatusCodes.{BadRequest, InternalServerError, No
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import akka.stream.Materializer
+import io.circe.CursorOp.DownField
+import io.circe.DecodingFailure
 import org.frekenbok.backend.AkkaHttpImplicits.jsonEntityMarshaller
 import org.frekenbok.backend.dao.InvoicesDao
 import org.frekenbok.backend.definitions.{Error, ErrorResponse, ErrorType}
@@ -33,8 +35,19 @@ package object handlers {
   private val rejectionHandler: RejectionHandler = RejectionHandler
     .newBuilder()
     .handle {
-      case ValidationRejection(message, _) =>
+      case ValidationRejection(message, cause) =>
         complete(BadRequest -> ErrorResponse(BadRequest.intValue, Error(ErrorType.BadRequest, message)))
+
+      case MalformedRequestContentRejection(_, DecodingFailure(_, ops)) =>
+        // sort of compromise between hiding of JSON parser and verbosity of 400 response
+        val problem = ops.headOption.collect { case DownField(field) => field }.getOrElse("request body")
+        complete(
+          BadRequest -> ErrorResponse(
+            BadRequest.intValue,
+            Error(ErrorType.BadRequest, s"Something is wrong with $problem")
+          )
+        )
+
       case MalformedRequestContentRejection(message, _) =>
         complete(BadRequest -> ErrorResponse(BadRequest.intValue, Error(ErrorType.BadRequest, message)))
     }
