@@ -1,12 +1,11 @@
 package org.frekenbok.backend.dao.mongo
 
 import java.time.Instant
-import java.util.UUID
 
-import org.frekenbok.backend.definitions.{Invoice, Transaction}
+import org.frekenbok.backend.dao.mongo.InvoicesDao.InvoiceRepr
+import org.frekenbok.backend.definitions.Invoice
 import reactivemongo.api.DB
 import reactivemongo.bson.{BSONDocument => doc}
-import shapeless.Generic.Aux
 import shapeless._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -22,7 +21,9 @@ class InvoicesDao(db: DB)(implicit ec: ExecutionContext, gen: Generic.Aux[Invoic
 }
 
 object InvoicesDao {
-  val generic: Aux[Invoice, UUID :: Instant :: IndexedSeq[Transaction] :: Option[String] :: HNil] = Generic[Invoice]
+
+  //noinspection TypeAnnotation
+  val generic = Generic[Invoice]
 
   type InvoiceRepr = generic.Repr
 }

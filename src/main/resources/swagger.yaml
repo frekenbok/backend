@@ -259,6 +259,14 @@ components:
         currency:
           $ref: '#/components/schemas/Currency'
 
+    BalanceItem:
+      type: object
+      properties:
+        accountId:
+          $ref: '#/components/schemas/AccountId'
+        amount:
+          $ref: '#/components/schemas/Money'
+
     Timestamp:
       type: string
       format: date-time
@@ -292,16 +300,19 @@ components:
         balance:
           type: array
           items:
-            $ref: '#/components/schemas/Money'
+            $ref: '#/components/schemas/BalanceItem'
 
     Transaction:
       type: object
       required:
+        - invoiceId
         - accountId
         - amount
         - currency
         - date
       properties:
+        invoiceId:
+          $ref: '#/components/schemas/InvoiceId'
         accountId:
           $ref: '#/components/schemas/AccountId'
         amount:

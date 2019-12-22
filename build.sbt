@@ -8,6 +8,7 @@ val akkaStreamVersion = "2.5.23"
 val akkaHttpVersion = "10.1.9"
 val circeVersion = "0.11.1"
 val specs2Version = "4.6.0"
+val doobieVersion = "0.7.0"
 
 libraryDependencies ++= List(
   "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
@@ -21,6 +22,12 @@ libraryDependencies ++= List(
   "io.circe" %% "circe-parser" % circeVersion,
 
   "org.reactivemongo" %% "reactivemongo" % "0.18.3",
+
+  "org.tpolecat" %% "doobie-core" % doobieVersion,
+  "org.tpolecat" %% "doobie-hikari" % doobieVersion,
+  "org.tpolecat" %% "doobie-postgres" % doobieVersion,
+  "org.tpolecat" %% "doobie-quill" % doobieVersion,
+  "org.tpolecat" %% "doobie-specs2" % doobieVersion % Test,
 
   "org.specs2" %% "specs2-core" % specs2Version % Test,
   "org.specs2" %% "specs2-mock" % specs2Version % Test,

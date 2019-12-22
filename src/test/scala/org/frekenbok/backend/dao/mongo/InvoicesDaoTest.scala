@@ -26,16 +26,19 @@ class InvoicesDaoTest extends Specification with MongoTest {
 
   val expenseAccountId: UUID = UUID.randomUUID
   val walletAccountId: UUID = UUID.randomUUID
+  val invoiceId: UUID = UUID.randomUUID
   val invoice = Invoice(
     UUID.randomUUID,
     Instant.parse("2019-08-06T01:24:15.450Z"),
     Vector(
       Transaction(
+        invoiceId,
         expenseAccountId,
         Money("23.15", "RUB"),
         LocalDate.parse("2019-08-06")
       ),
       Transaction(
+        invoiceId,
         walletAccountId,
         Money("-23.15", "RUB"),
         LocalDate.parse("2019-08-09")
@@ -54,7 +57,7 @@ class InvoicesDaoTest extends Specification with MongoTest {
     }
 
     "update item" in {
-      val newTransaction = Transaction(UUID.randomUUID, Money("10.15", "RUB"), LocalDate.of(2025, 3, 1))
+      val newTransaction = Transaction(UUID.randomUUID, UUID.randomUUID, Money("10.15", "RUB"), LocalDate.of(2025, 3, 1))
       val updated = invoice.copy(transactions = invoice.transactions :+ newTransaction)
 
       Await.result(dao.add(updated).flatMap(_ => dao.get(updated.id)), timeout) must beSome(updated)

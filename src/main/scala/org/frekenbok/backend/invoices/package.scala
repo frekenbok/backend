@@ -9,10 +9,8 @@ import scala.util.Try
 
 package object invoices {
 
-  implicit val instantUnmarshaller: Unmarshaller[String, Instant] = Unmarshaller {
-    _ =>
-      string =>
-        Future.fromTry(Try(Instant.parse(string)))
+  implicit val instantUnmarshaller: Unmarshaller[String, Instant] = Unmarshaller { _ => string =>
+    Future.fromTry(Try(Instant.parse(string)))
   }
 
 }

@@ -1,11 +1,8 @@
 package org.frekenbok.backend.dao.mongo
 
-import java.time.Instant
-import java.util.UUID
-
-import org.frekenbok.backend.definitions.{Account, AccountType, Money}
+import org.frekenbok.backend.dao.mongo.AccountsDao.AccountRepr
+import org.frekenbok.backend.definitions.Account
 import reactivemongo.api.DB
-import shapeless.Generic.Aux
 import shapeless._
 
 import scala.concurrent.ExecutionContext
@@ -16,7 +13,8 @@ class AccountsDao(db: DB)(implicit ec: ExecutionContext, gen: LabelledGeneric.Au
 
 object AccountsDao {
 
-  val generic: Aux[Account, UUID :: String :: AccountType :: Option[Instant] :: Option[Instant] :: IndexedSeq[Money] :: HNil] = Generic[Account]
+  //noinspection TypeAnnotation
+  val generic = Generic[Account]
 
   type AccountRepr = generic.Repr
 }

@@ -14,6 +14,7 @@ package object mongo {
   case class MongoSelector(@Key("_id") id: UUID)
 
   object MongoSelector {
+
     def apply[T, Repr <: UUID :: HList](item: T)(implicit gen: Generic.Aux[T, Repr]): MongoSelector = {
       apply(gen.to(item).head)
     }
@@ -46,9 +47,9 @@ package object mongo {
 
   //TODO try to implement this using shapeless
   /**
-   * Replace `id` fields in BSONDocument to `_id` and vice versa. Sort of work around for
-   * MongoDB, required because we can't rename primary key field.
-   */
+    * Replace `id` fields in BSONDocument to `_id` and vice versa. Sort of work around for
+    * MongoDB, required because we can't rename primary key field.
+    */
   protected[mongo] trait IdAdjustingHandler[T] extends BSONDocumentWriter[T] with BSONDocumentReader[T] {
     protected def handler: BSONDocumentHandler[T]
 
@@ -77,6 +78,7 @@ package object mongo {
   implicit val selectorWriter: BSONDocumentWriter[MongoSelector] = Macros.writer[MongoSelector]
 
   implicit val moneyHandler: BSONDocumentHandler[Money] = Macros.handler[Money]
+  implicit val balanceItemHandler: BSONDocumentHandler[BalanceItem] = Macros.handler[BalanceItem]
   implicit val transactionHandler: BSONDocumentHandler[Transaction] = Macros.handler[Transaction]
   implicit val accountTypeHandler: BSONDocumentHandler[AccountType] = Macros.handler[AccountType]
 
