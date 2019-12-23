@@ -20,8 +20,6 @@ class InvoicesDaoTest extends Specification with MongoTest {
   implicit val env: ExecutionEnv = ExecutionEnv.fromGlobalExecutionContext
   val timeout: FiniteDuration = 5 seconds
 
-  implicit def strToBigDecimal(string: String): BigDecimal = BigDecimal(string)
-
   private val dao = new InvoicesDao(db)
 
   val expenseAccountId: UUID = UUID.randomUUID

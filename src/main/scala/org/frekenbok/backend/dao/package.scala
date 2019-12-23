@@ -8,15 +8,12 @@ import org.frekenbok.backend.definitions._
 import reactivemongo.api.bson.Macros.Annotations.Key
 import reactivemongo.api.bson.Subtype.UuidSubtype
 import reactivemongo.api.bson._
-import shapeless._
 
 import scala.util.Try
 
 package object dao {
 
   case class MongoSelector[PK](@Key("_id") id: PK)
-
-  type Repr[PK, Rest <: HList] = PK :: Rest
 
   implicit val uuidReader: BSONReader[UUID] = BSONReader.collect {
     case binary: BSONBinary if binary.subtype == UuidSubtype =>
@@ -73,7 +70,12 @@ package object dao {
 
   implicit val moneyHandler: BSONDocumentHandler[Money] = Macros.handler[Money]
   implicit val transactionHandler: BSONDocumentHandler[Transaction] = Macros.handler[Transaction]
-  implicit val accountTypeHandler: BSONDocumentHandler[AccountType] = Macros.handler[AccountType]
+
+  implicit val accountTypeReader: BSONReader[AccountType] = BSONReader.collect {
+    case BSONString(string) if AccountType.parse(string).nonEmpty =>
+      AccountType.parse(string).get
+  }
+  implicit val accountTypeWriter: BSONWriter[AccountType] = BSONWriter(at => BSONString(at.value))
 
   implicit object AccountHandler extends IdAdjustingHandler[Account] {
     protected val underlying: BSONDocumentHandler[Account] = Macros.handler[Account]

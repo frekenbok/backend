@@ -14,12 +14,14 @@ import reactivemongo.api.{DefaultDB, MongoDriver}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
-import scala.language.postfixOps
+import scala.language.{implicitConversions, postfixOps}
 
 trait MongoTest extends NoLanguageFeatures with AfterAll {
   this: Specification =>
 
   val mongoConfig: MongoConfig = ConfigFactory.load().as[MongoConfig]("mongo")
+
+  implicit def strToBigDecimal(string: String): BigDecimal = BigDecimal(string)
 
   def afterAll(): Unit = {
     Await.result(db.drop(), 5 seconds)

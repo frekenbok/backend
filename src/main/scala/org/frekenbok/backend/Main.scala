@@ -19,17 +19,13 @@ object Main extends App {
 
   import as.dispatcher
 
-  val log = Logger("main")
+  val log = Logger(getClass)
 
   (for {
     config <- Future.fromTry(Try(ConfigFactory.load().as[Config]))
     connection <- AsyncDriver().connect(config.mongo.uri)
     db <- connection.database(config.mongo.database)
-    binding <- Http().bindAndHandle(
-      handler = routes(db),
-      interface = config.http.host,
-      port = config.http.port
-    )
+    binding <- Http().bindAndHandle(routes(db), config.http.host, config.http.port)
   } yield binding).onComplete({
     case Failure(exception) =>
       log.error(s"Can't start application: ${exception.getMessage}")

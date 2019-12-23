@@ -12,8 +12,9 @@ import org.frekenbok.backend.dao.InvoicesDao
 import org.frekenbok.backend.definitions.{Error, ErrorResponse, ErrorType}
 import org.frekenbok.backend.invoices.InvoicesResource
 import reactivemongo.api.DB
+import reactivemongo.api.commands.UpdateWriteResult
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 package object handlers {
@@ -29,6 +30,34 @@ package object handlers {
       }
 
       complete(statusCode -> ErrorResponse(statusCode.intValue, Error(errorType, message)))
+    }
+  }
+
+  private[handlers] implicit class UpdateWriteResultOps(eventualResult: Future[UpdateWriteResult])(
+    implicit ec: ExecutionContext
+  ) {
+
+    def onWriteResult[T](onSuccess: => T, onFailure: ErrorResponse => T): Future[T] = {
+      eventualResult.map {
+        case result: UpdateWriteResult if result.ok =>
+          onSuccess
+
+        case _ =>
+          onFailure(ErrorResponse(500, Error(ErrorType.InternalServerError, "Internal server error")))
+      }
+    }
+  }
+
+  private[handlers] implicit class GetSingleOps[T](maybeResult: Future[Option[T]])(implicit ec: ExecutionContext) {
+
+    def onResult[R](onSome: T => R, onNone: ErrorResponse => R): Future[R] = {
+      maybeResult.map {
+        case Some(result) =>
+          onSome(result)
+
+        case None =>
+          onNone(ErrorResponse(404, Error(ErrorType.NotFound, s"Item not found")))
+      }
     }
   }
 
