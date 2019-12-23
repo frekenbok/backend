@@ -1,5 +1,6 @@
 package org.frekenbok.backend
 
+import akka.http.scaladsl.model.StatusCode
 import akka.http.scaladsl.model.StatusCodes.{BadRequest, InternalServerError, NotFound}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
@@ -17,17 +18,26 @@ import scala.util.control.NonFatal
 
 package object handlers {
 
+  private implicit class ErrorResponseOps(errorResponse: ErrorResponse.type) {
+
+    def apply(statusCode: StatusCode, message: String): Route = {
+      val errorType = statusCode match {
+        case NotFound => ErrorType.NotFound
+        case BadRequest => ErrorType.BadRequest
+        case InternalServerError => ErrorType.InternalServerError
+        case _ => ErrorType.InternalServerError
+      }
+
+      complete(statusCode -> ErrorResponse(statusCode.intValue, Error(errorType, message)))
+    }
+  }
+
   private val exceptionHandler = ExceptionHandler {
     case NonFatal(exception) =>
       extractLog { log =>
         extractRequest { request =>
           log.error(exception, s"Error while handling $request")
-          complete(
-            InternalServerError -> ErrorResponse(
-              InternalServerError.intValue,
-              Error(ErrorType.InternalServerError, "Internal server error")
-            )
-          )
+          ErrorResponse(InternalServerError, "Internal server error")
         }
       }
   }
@@ -35,34 +45,25 @@ package object handlers {
   private val rejectionHandler: RejectionHandler = RejectionHandler
     .newBuilder()
     .handle {
-      case ValidationRejection(message, cause) =>
-        complete(BadRequest -> ErrorResponse(BadRequest.intValue, Error(ErrorType.BadRequest, message)))
+      case ValidationRejection(message, _) =>
+        ErrorResponse(BadRequest, message)
 
       case MalformedRequestContentRejection(_, DecodingFailure(_, ops)) =>
         // sort of compromise between hiding of JSON parser and verbosity of 400 response
         val problem = ops.headOption.collect { case DownField(field) => field }.getOrElse("request body")
-        complete(
-          BadRequest -> ErrorResponse(
-            BadRequest.intValue,
-            Error(ErrorType.BadRequest, s"Something is wrong with $problem")
-          )
-        )
+        ErrorResponse(BadRequest, s"Something is wrong with $problem")
 
       case MalformedRequestContentRejection(message, _) =>
-        complete(BadRequest -> ErrorResponse(BadRequest.intValue, Error(ErrorType.BadRequest, message)))
+        ErrorResponse(BadRequest, message)
     }
     .result()
-
-  private val finalRoute: Route = {
-    complete(NotFound -> ErrorResponse(NotFound.intValue, Error(ErrorType.NotFound, "Not found")))
-  }
 
   def routes(db: DB)(implicit ec: ExecutionContext, ma: Materializer): Route = {
     handleExceptions(exceptionHandler) {
       handleRejections(rejectionHandler) {
         InvoicesResource.routes(new InvoicesHandlerImpl(new InvoicesDao(db)))
       }
-    } ~ finalRoute
+    } ~ ErrorResponse(NotFound, "Not found")
   }
 
 }

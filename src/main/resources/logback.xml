@@ -9,7 +9,7 @@
         <appender-ref ref="STDOUT"/>
     </root>
 
-    <logger name="reactivemongo" level="INFO">
+    <logger name="reactivemongo.core" level="INFO">
         <appender-ref ref="STDOUT"/>
     </logger>
 </configuration>
